@@ -1,0 +1,92 @@
+#!/usr/bin/env bash
+
+shopt -s nullglob
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+FILE='FILE'
+DIR='DIR'
+EXE='EXE'
+
+d=0
+i=0
+
+print_frame(){
+	local space=$1
+	local current_count=$2
+	local total_count=$3
+	
+	for x in $(seq 0 $space); do
+		echo -en "$NC"
+		if (( x == 0 )) && (( $space > 0 )); then
+			echo -en '\U2502 '
+		elif (( x == $space )) || (( $space == 0 )) ; then
+			if (( current_count == total_count )) ; then
+				echo -en '\U2514'
+			else
+				echo -en '\U251C'
+			fi
+			echo -en '\U2500\U2500 '
+		else
+			echo -n ' '
+		fi
+	done
+}
+
+get_file_type(){
+	file_path=$1
+	type=
+	if [ -d "$file_path" ]; then
+		type=$DIR
+	elif [ -x "$file_path" ]; then
+		type=$EXE
+	else
+		type=$FILE
+	fi
+	echo $type
+}
+
+
+set_color(){
+	file_type=$1
+	if [ "$file_type" = "$DIR" ]; then
+		echo -en "$BLUE" # color for directories
+	elif [ "$file_type" = "$EXE" ]; then
+		echo -en "$GREEN" # color for executalbes
+	else
+		echo -en "$NC" # no color for other files
+	fi
+}
+
+tree(){
+	local space=$2
+	local level_count=0
+	local current_count=0
+	for f in $1 ; do
+		((level_count++))
+	done
+	for f in $1 ; do
+		((current_count++))
+		print_frame $space $current_count $level_count
+		file_type=$(get_file_type "$f")
+		set_color $file_type		
+				
+		echo  "${f##*/}"
+		if [ "$file_type" = "$DIR" ]; then
+			((d++))
+			((space+=3))
+			tree "$f/*" $space
+			((space-=3))
+		else
+			((i++))
+		fi
+	done
+}
+
+dir=${1:-"./*"}
+tree "$dir" 0
+echo -e "${NC}\nDirectories: $d    Files: $i"
