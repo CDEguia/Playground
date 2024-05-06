@@ -29,8 +29,8 @@ print_frame(){
 	local current_count=$2
 	local total_count=$3
 	
+	set_color
 	for x in $(seq 0 $space); do
-		echo -en "$NC"
 		if (( x == 0 )) && (( $space > 0 )); then
 			echo -en '\U2502 '
 		elif (( x == $space )) || (( $space == 0 )) ; then
