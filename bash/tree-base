@@ -22,14 +22,15 @@ EXE='EXE'
 # Global counters
 total_directory_count=0
 total_file_count=0
-
+current_item_color=
+current_item_type=
 
 print_frame(){
 	local space=$1
 	local current_count=$2
 	local total_count=$3
 	
-	set_color
+	echo -en "${NC}"
 	for x in $(seq 0 $space); do
 		if (( x == 0 )) && (( $space > 0 )); then
 			echo -en '\U2502 '
@@ -47,28 +48,26 @@ print_frame(){
 }
 
 
-get_file_type(){
+set_current_item_type(){
 	file_path=$1
-	type=
 	if [ -d "$file_path" ]; then
-		type=$DIR
+		current_item_type=$DIR
 	elif [ -x "$file_path" ]; then
-		type=$EXE
+		current_item_type=$EXE
 	else
-		type=$FILE
+		current_item_type=$FILE
 	fi
-	echo $type
 }
 
 
-set_color(){
-	file_type=$1
-	if [ "$file_type" = "$DIR" ]; then
-		echo -en "$BLUE" # color for directories
-	elif [ "$file_type" = "$EXE" ]; then
-		echo -en "$GREEN" # color for executalbes
+set_current_item_color(){
+	local type=$1
+	if [ "$type" = "$DIR" ]; then
+		current_item_color=$BLUE # color for directories
+	elif [ "$type" = "$EXE" ]; then
+		current_item_color=$GREEN # color for executalbes
 	else
-		echo -en "$NC" # no color for other files
+		current_item_color=$NC # no color for other files
 	fi
 }
 
@@ -83,11 +82,11 @@ tree(){
 	for f in $1 ; do
 		((current_count++))
 		print_frame $space $current_count $level_count
-		file_type=$(get_file_type "$f")
-		set_color $file_type		
+		set_current_item_type "$f"
+		set_current_item_color $current_item_type		
 				
-		echo  "${f##*/}"
-		if [ "$file_type" = "$DIR" ]; then
+		echo -e "${current_item_color}${f##*/}${NC}"
+		if [ "$current_item_type" = "$DIR" ]; then
 			((total_directory_count++))
 			((space+=3))
 			tree "$f/*" $space
