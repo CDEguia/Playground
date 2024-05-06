@@ -1,7 +1,14 @@
 #!/usr/bin/env bash
 
+############################################
+#
+# Output shall be identical to running `tree`
+#
+############################################
+
 shopt -s nullglob
 
+# Hardcode vars
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
@@ -12,8 +19,10 @@ FILE='FILE'
 DIR='DIR'
 EXE='EXE'
 
-d=0
-i=0
+# Global counters
+total_directory_count=0
+total_file_count=0
+
 
 print_frame(){
 	local space=$1
@@ -36,6 +45,7 @@ print_frame(){
 		fi
 	done
 }
+
 
 get_file_type(){
 	file_path=$1
@@ -62,6 +72,7 @@ set_color(){
 	fi
 }
 
+
 tree(){
 	local space=$2
 	local level_count=0
@@ -77,16 +88,17 @@ tree(){
 				
 		echo  "${f##*/}"
 		if [ "$file_type" = "$DIR" ]; then
-			((d++))
+			((total_directory_count++))
 			((space+=3))
 			tree "$f/*" $space
 			((space-=3))
 		else
-			((i++))
+			((total_file_count++))
 		fi
 	done
 }
 
+
 dir=${1:-"./*"}
 tree "$dir" 0
-echo -e "${NC}\nDirectories: $d    Files: $i"
+echo -e "${NC}\n$total_directory_count directories, $total_file_count files"
