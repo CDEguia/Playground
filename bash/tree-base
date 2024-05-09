@@ -32,7 +32,7 @@ print_frame(){
 	
 	echo -en "${NC}"
 	for x in $(seq 0 $space); do
-		if (( x == 0 )) && (( $space > 0 )); then
+		if ( (( x == 0 )) && (( $space > 0 )) ) || ( (( (( x % 3 )) == 0 ))  && (( x != $space)) ) ; then
 			echo -en '\U2502 '
 		elif (( x == $space )) || (( $space == 0 )) ; then
 			if (( current_count == total_count )) ; then
