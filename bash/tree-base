@@ -24,73 +24,62 @@ total_directory_count=0
 total_file_count=0
 current_item_color=
 current_item_type=
+temp_frame=""
+
 
 print_frame(){
-	local space=$1
+	local level=$1
 	local current_count=$2
 	local total_count=$3
-	
-	echo -en "${NC}"
-	for x in $(seq 0 $space); do
-		if ( (( x == 0 )) && (( $space > 0 )) ) || ( (( (( x % 3 )) == 0 ))  && (( x != $space)) ) ; then
-			echo -en '\U2502 '
-		elif (( x == $space )) || (( $space == 0 )) ; then
-			if (( current_count == total_count )) ; then
-				echo -en '\U2514'
-			else
-				echo -en '\U251C'
-			fi
-			echo -en '\U2500\U2500 '
-		else
-			echo -n ' '
-		fi
-	done
+	local string=""
+	if (( ${#temp_frame} < ((((level-1)) * 9)) )); then
+		temp_frame="$temp_frame\U2502   "
+	fi
+	if (( current_count == total_count )) ; then
+		string="$temp_frame\U2514"
+	else
+		string="$temp_frame\U251C"
+	fi
+	string="$string\U2500\U2500 "
+	echo -en "$NC$string"
 }
 
 
-set_current_item_type(){
+set_current_item_info(){
 	file_path=$1
 	if [ -d "$file_path" ]; then
 		current_item_type=$DIR
+		current_item_color=$BLUE # color for directories
 	elif [ -x "$file_path" ]; then
 		current_item_type=$EXE
-	else
-		current_item_type=$FILE
-	fi
-}
-
-
-set_current_item_color(){
-	local type=$1
-	if [ "$type" = "$DIR" ]; then
-		current_item_color=$BLUE # color for directories
-	elif [ "$type" = "$EXE" ]; then
 		current_item_color=$GREEN # color for executalbes
 	else
+		current_item_type=$FILE
 		current_item_color=$NC # no color for other files
 	fi
 }
 
 
 tree(){
-	local space=$2
-	local level_count=0
+	local level=${2:-0}
+	local count_at_level=0
 	local current_count=0
 	for f in $1 ; do
-		((level_count++))
+		((count_at_level++))
 	done
 	for f in $1 ; do
 		((current_count++))
-		print_frame $space $current_count $level_count
-		set_current_item_type "$f"
-		set_current_item_color $current_item_type		
+		if ((level != 0)); then
+			print_frame $level $current_count $count_at_level
+		fi
+		set_current_item_info "$f"
 				
 		echo -e "${current_item_color}${f##*/}${NC}"
 		if [ "$current_item_type" = "$DIR" ]; then
 			((total_directory_count++))
-			((space+=3))
-			tree "$f/*" $space
-			((space-=3))
+			tree "$f/*" $(((++level)))
+			temp_frame=${temp_frame%?????????}
+			((level--))
 		else
 			((total_file_count++))
 		fi
@@ -98,6 +87,6 @@ tree(){
 }
 
 
-dir=${1:-"./*"}
-tree "$dir" 0
+dir=${1:-"."}
+tree "$dir"
 echo -e "${NC}\n$total_directory_count directories, $total_file_count files"
