@@ -9,6 +9,8 @@ DEBUG=${DEBUG:=false}
 if $DEBUG; then
 	set -x
 fi
+SOURCE=$( dirname -- "${BASH_SOURCE[0]}" )
+source "$SOURCE/logging.sh"
 
 shopt -s nullglob
 
@@ -77,6 +79,7 @@ tree(){
 	for f in $1 ; do
 		((count_at_level++))
 	done
+	.log "debug" "$@"
 	if ((count_at_level==0)); then
 		# Add space to compensate for the blind removal of after the return to the calling function without going through the next loop 
 		update_frame $update_frame
@@ -116,6 +119,33 @@ tree(){
 }
 
 
-dir=${1:-"."}
-tree "$dir"
+OPTS="${OPTS}h"
+
+usage(){
+	command_name="${0##*/}"
+	echo "Usage: $command_name [-${OPTS}] [directory ...]"
+	echo
+	verbosity_usage
+	echo 
+	echo "  Specific options:"
+	echo "    -h			Show usage"
+}
+
+while getopts "$OPTS" opt; do
+	handle_verbosity_opts "$opt" "$OPTARG"
+    case "$opt" in
+		h) usage; exit 0 ;;
+		\?) usage; exit 1 ;;
+    esac	
+done
+shift $((OPTIND-1))
+
+starting_dir=${@:-.}
+.log debug "dir: $starting_dir"
+
+for d in "$starting_dir"; do
+	tree "$d"
+	echo
+done
+
 echo -e "${NC}\n$total_directory_count directories, $total_file_count files"
