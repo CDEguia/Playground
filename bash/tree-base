@@ -61,7 +61,7 @@ set_current_item_info(){
 
 
 tree(){
-	local level=$2
+	local level=${2:-0}
 	local count_at_level=0
 	local current_count=0
 	for f in $1 ; do
@@ -69,7 +69,7 @@ tree(){
 	done
 	for f in $1 ; do
 		((current_count++))
-		if ((total_directory_count != 0)); then
+		if ((level != 0)); then
 			print_frame $level $current_count $count_at_level
 		fi
 		set_current_item_info "$f"
@@ -77,10 +77,9 @@ tree(){
 		echo -e "${current_item_color}${f##*/}${NC}"
 		if [ "$current_item_type" = "$DIR" ]; then
 			((total_directory_count++))
-			((level+=1))
-			tree "$f/*" $level
+			tree "$f/*" $(((++level)))
 			temp_frame=${temp_frame%?????????}
-			((level-=1))
+			((level--))
 		else
 			((total_file_count++))
 		fi
@@ -89,5 +88,5 @@ tree(){
 
 
 dir=${1:-"."}
-tree "$dir" 0
+tree "$dir"
 echo -e "${NC}\n$total_directory_count directories, $total_file_count files"
