@@ -23,15 +23,13 @@ handle_verbosity_opts(){
     esac
 }
 
-declare -A LOG_LEVELS
-declare -A KEYWORD_LEVELS
-
-# https://en.wikipedia.org/wiki/Syslog#Severity_level
-KEYWORD_LEVELS=(["emerg"]=0 ["alert"]=1 ["crit"]=2 ["err"]=3 ["warning"]=4 ["notice"]=5 ["info"]=6 ["debug"]=7)
 function .log () {
-  local LEVEL=$1
-  shift
-  if [ ${__VERBOSE} -ge ${KEYWORD_LEVELS[$LEVEL]} ]; then
-    echo "[${LEVEL}]" "$@"
-  fi
+	declare -A KEYWORD_LEVELS
+  	# https://en.wikipedia.org/wiki/Syslog#Severity_level
+  	KEYWORD_LEVELS=(["emerg"]=0 ["alert"]=1 ["crit"]=2 ["err"]=3 ["warning"]=4 ["notice"]=5 ["info"]=6 ["debug"]=7)
+  	local LEVEL=$1
+  	if ((__VERBOSE >= KEYWORD_LEVELS[$LEVEL])); then
+  	  shift
+  	  echo "[${LEVEL}]" "$@"
+  	fi
 }
