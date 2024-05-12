@@ -28,32 +28,33 @@ EXE='EXE'
 # Global counters
 total_directory_count=0
 total_file_count=0
+
 current_item_color=
 current_item_type=
+
 temp_frame=""
+current_frame=""
 
 update_frame(){
 	local is_last_dir=$1
-	if $is_last_dir; then
+	if (( is_last_dir == 0 )); then
 		temp_frame="$temp_frame    "
 	else
 		temp_frame="$temp_frame\U2502   "
 	fi
 }
 
-print_frame(){
-	local level=$1
-	local current_count=$2
-	local total_count=$3
+set_frame(){
+	local is_last_in_dir=$1
 	local string=""
 
-	if (( current_count == total_count )) ; then
-		string="$temp_frame\U2514"
+	if ((is_last_in_dir==0)) ; then
+		string="$temp_frame\U2514" # last in dir
 	else
-		string="$temp_frame\U251C"
+		string="$temp_frame\U251C" # more in dir
 	fi
 	string="$string\U2500\U2500 "
-	echo -en "$NC$string"
+	current_frame="$NC$string"
 }
 
 set_current_item_info(){
@@ -72,40 +73,39 @@ set_current_item_info(){
 
 tree(){
 	local level=${2:-0}
-	local count_at_level=0
-	local current_count=0
-	local is_last_in_dir=${3:-false}
+	local is_last_in_upper_dir=${3:-false}
 	local update_frame=true
-	for f in $1 ; do
-		((count_at_level++))
-	done
-	.log "debug" "$@"
-	if ((count_at_level==0)); then
+	#local count_at_level=$(set -- $1; echo $#) # will take twice as long as doing the following for loop 
+	#local count_at_level=0
+	#for f in $1 ; do # ~time: 0.03s user 0.00s system 98% cpu 0.033 total
+	#	((count_at_level++))
+	#done
+	#.log "debug" "$@"
+	local directory=($1) # ~time: 0.025s user 0.00s system 98% cpu 0.029 total
+	if ((${#directory[@]}==0)); then
 		# Add space to compensate for the blind removal of after the return to the calling function without going through the next loop 
 		update_frame $update_frame
 	fi
+	#.log "debug" "${directory[-1]}"
+	
 	for f in $1 ; do
-		((current_count++))
 		if ((level != 0)); then
 			if $update_frame && ((level != 1)); then
-				update_frame $is_last_in_dir
+				update_frame $is_last_in_upper_dir
 				update_frame=false
 			fi
-			print_frame $level $current_count $count_at_level $update_frame
+			#.log "debug" " $f    ; ${directory[-1]}"
+			[ "$f" == "${directory[-1]}" ]
+			is_last_in_dir=$?
+			#.log "debug" $is_last_in_dir
+			set_frame $is_last_in_dir
 		fi
 		set_current_item_info "$f"
-		echo -e "${current_item_color}${f##*/}${NC}"
+		echo -e "${current_frame}${current_item_color}${f##*/}${NC}"
 		
 		if [ "$current_item_type" = "$DIR" ]; then
 			((total_directory_count++))
-			
-			if ((current_count == count_at_level)); then
-				is_last_in_dir=true
-			else
-				is_last_in_dir=false
-			fi	
-			
-			tree "$f/*" $(((++level))) $is_last_in_dir
+			tree "$f/*" $(((++level))) "$is_last_in_dir"
 			if [ "${temp_frame:(-4)}" != '    ' ]; then
 				temp_frame=${temp_frame%?????????}
 			else
@@ -141,11 +141,11 @@ done
 shift $((OPTIND-1))
 
 starting_dir=${@:-.}
-.log debug "dir: $starting_dir"
+#.log debug "dir: $starting_dir"
 
 for d in "$starting_dir"; do
 	tree "$d"
 	echo
 done
 
-echo -e "${NC}\n$total_directory_count directories, $total_file_count files"
+echo -e "${NC}$total_directory_count directories, $total_file_count files"
