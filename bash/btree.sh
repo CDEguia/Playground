@@ -37,7 +37,7 @@ current_frame=""
 
 update_frame(){
 	local is_last_dir=$1
-	if (( is_last_dir == 0 )); then
+	if ((is_last_dir == 0)); then
 		temp_frame="$temp_frame    "
 	else
 		temp_frame="$temp_frame\U2502   "
@@ -48,7 +48,7 @@ set_frame(){
 	local is_last_in_dir=$1
 	local string=""
 
-	if ((is_last_in_dir==0)) ; then
+	if ((is_last_in_dir == 0)) ; then
 		string="$temp_frame\U2514" # last in dir
 	else
 		string="$temp_frame\U251C" # more in dir
@@ -59,10 +59,10 @@ set_frame(){
 
 set_current_item_info(){
 	file_path=$1
-	if [ -d "$file_path" ]; then
+	if [[ -d $file_path ]]; then
 		current_item_type=$DIR
 		current_item_color=$BLUE # color for directories
-	elif [ -x "$file_path" ]; then
+	elif [[ -x $file_path ]]; then
 		current_item_type=$EXE
 		current_item_color=$GREEN # color for executalbes
 	else
@@ -82,7 +82,7 @@ tree(){
 	#done
 	#.log "debug" "$@"
 	local directory=($1) # ~time: 0.025s user 0.00s system 98% cpu 0.029 total
-	if ((${#directory[@]}==0)); then
+	if ((${#directory[@]} == 0)); then
 		# Add space to compensate for the blind removal of after the return to the calling function without going through the next loop 
 		update_frame $update_frame
 	fi
@@ -95,7 +95,7 @@ tree(){
 				update_frame=false
 			fi
 			#.log "debug" " $f    ; ${directory[-1]}"
-			[ "$f" == "${directory[-1]}" ]
+			[[ "$f" == "${directory[-1]}" ]]
 			is_last_in_dir=$?
 			#.log "debug" $is_last_in_dir
 			set_frame $is_last_in_dir
@@ -103,10 +103,10 @@ tree(){
 		set_current_item_info "$f"
 		echo -e "${current_frame}${current_item_color}${f##*/}${NC}"
 		
-		if [ "$current_item_type" = "$DIR" ]; then
+		if [[ "$current_item_type" = "$DIR" ]]; then
 			((total_directory_count++))
 			tree "$f/*" $(((++level))) "$is_last_in_dir"
-			if [ "${temp_frame:(-4)}" != '    ' ]; then
+			if [[ "${temp_frame:(-4)}" != '    ' ]]; then
 				temp_frame=${temp_frame%?????????}
 			else
 				temp_frame=${temp_frame%????}
