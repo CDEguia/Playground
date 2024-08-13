@@ -11,15 +11,9 @@ if $DEBUG; then
 fi
 SOURCE=$( dirname -- "${BASH_SOURCE[0]}" )
 source "$SOURCE/logging.sh"
+source "$SOUCRE/colorize.sh"
 
 shopt -s nullglob
-
-# Hardcode vars
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[0;33m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
 
 FILE='FILE'
 DIR='DIR'
@@ -54,7 +48,7 @@ set_frame(){
 		string="$temp_frame\U251C" # more in dir
 	fi
 	string="$string\U2500\U2500 "
-	current_frame="$NC$string"
+	current_frame="$RESET$string"
 }
 
 set_current_item_info(){
@@ -67,7 +61,7 @@ set_current_item_info(){
 		current_item_color=$GREEN # color for executalbes
 	else
 		current_item_type=$FILE
-		current_item_color=$NC # no color for other files
+		current_item_color=$RESET # no color for other files
 	fi
 }
 
@@ -80,13 +74,13 @@ tree(){
 	#for f in $1 ; do # ~time: 0.03s user 0.00s system 98% cpu 0.033 total
 	#	((count_at_level++))
 	#done
-	#.log "debug" "$@"
+	.log "debug" "$@"
 	local directory=($1) # ~time: 0.025s user 0.00s system 98% cpu 0.029 total
 	if ((${#directory[@]} == 0)); then
 		# Add space to compensate for the blind removal of after the return to the calling function without going through the next loop 
 		update_frame $update_frame
 	fi
-	#.log "debug" "${directory[-1]}"
+	.log "debug" "${directory[-1]}"
 	
 	for f in $1 ; do
 		if ((level != 0)); then
@@ -94,14 +88,14 @@ tree(){
 				update_frame $is_last_in_upper_dir
 				update_frame=false
 			fi
-			#.log "debug" " $f    ; ${directory[-1]}"
+			.log "debug" " $f    ; ${directory[-1]}"
 			[[ "$f" == "${directory[-1]}" ]]
 			is_last_in_dir=$?
-			#.log "debug" $is_last_in_dir
+			.log "debug" $is_last_in_dir
 			set_frame $is_last_in_dir
 		fi
 		set_current_item_info "$f"
-		echo -e "${current_frame}${current_item_color}${f##*/}${NC}"
+		echo -e "${current_frame}${current_item_color}${f##*/}${RESET}"
 		
 		if [[ "$current_item_type" = "$DIR" ]]; then
 			((total_directory_count++))
@@ -141,11 +135,11 @@ done
 shift $((OPTIND-1))
 
 starting_dir=${@:-.}
-#.log debug "dir: $starting_dir"
+.log debug "dir: $starting_dir"
 
 for d in "$starting_dir"; do
 	tree "$d"
 	echo
 done
 
-echo -e "${NC}$total_directory_count directories, $total_file_count files"
+echo -e "${RESET}$total_directory_count directories, $total_file_count files"
