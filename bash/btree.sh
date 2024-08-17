@@ -69,7 +69,8 @@ tree(){
 	local level=${2:-0}
 	local is_last_in_upper_dir=${3:-false}
 	local update_frame=true
-	#local count_at_level=$(set -- $1; echo $#) # will take twice as long as doing the following for loop 
+	#local count_at_level=$(set -- $1; echo $#) # will take twice as long as 
+	#	doing the following for loop 
 	#local count_at_level=0
 	#for f in $1 ; do # ~time: 0.03s user 0.00s system 98% cpu 0.033 total
 	#	((count_at_level++))
@@ -77,7 +78,8 @@ tree(){
 	.log "debug" "$@"
 	local directory=($1) # ~time: 0.025s user 0.00s system 98% cpu 0.029 total
 	if ((${#directory[@]} == 0)); then
-		# Add space to compensate for the blind removal of after the return to the calling function without going through the next loop 
+		# Add space to compensate for the blind removal of after the return to
+		#	the calling function without going through the next loop 
 		update_frame $update_frame
 	fi
 	.log "debug" "${directory[-1]}"
@@ -127,10 +129,10 @@ usage(){
 
 while getopts "$OPTS" opt; do
 	handle_verbosity_opts "$opt" "$OPTARG"
-    case "$opt" in
+  case "$opt" in
 		h) usage; exit 0 ;;
 		\?) usage; exit 1 ;;
-    esac	
+   esac	
 done
 shift $((OPTIND-1))
 

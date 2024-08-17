@@ -1,6 +1,6 @@
 #!/bin/bash
 
-###########################################
+#########################################
 # Used to easily change the color of test in bash/sh
 #
 # Import:
@@ -18,7 +18,7 @@
 ## Print underlined green text
 # echo -e "${GREEN}${UNDERLINED}This is underlined green text${RESET}"
 #
-###########################################
+#########################################
 
 # Define color codes
 BLACK='\033[0;30m'
