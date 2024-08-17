@@ -1,3 +1,8 @@
+#########################################
+#
+# A drawing of a "virus" inspired by Instagram post by ????
+#
+#########################################
 import turtle as t
 
 t.Screen().setup(800, 800, 1600, 400)
@@ -17,8 +22,8 @@ t.pendown()
 t.speed(0)
 b = 200
 while b > 0:
-    t.left(b)
-    t.forward( b * 3)
-    b = b - 1
+  t.left(b)
+  t.forward( b * 3)
+  b = b - 1
 
 t.Screen().exitonclick()
